@@ -1,6 +1,5 @@
 '''VERSION 1.2                                           
     Wanted extra functionality
-    1. username signup should be case insensitive
 '''
 
 
@@ -92,3 +91,14 @@ def search_book():
     books = db.execute("SELECT * FROM books WHERE title ILIKE '%" + src +"%' OR isbn ILIKE '%" + src + "%' or author ILIKE '%" + src + "%'").fetchall()
 
     return render_template("result.html", books=books, src=src)
+
+@app.route("/search-book/<int:book_id>")
+def book(book_id):
+
+    # Invalid book id
+    book = db.execute("SELECT * FROM books WHERE id = :id", {"id":book_id}).fetchone()
+    if book is None:
+        return render_template("invalid-id.html") #TODO create invalid-id.html
+
+    # Pass book object to page for its details
+    return render_template("details.html", book=book)

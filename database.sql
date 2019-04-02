@@ -16,7 +16,7 @@ CREATE TABLE books (
     year INTEGER NOT NULL
 );
 
--- Table for smaller books
+-- Table for smaller books (testing purposes)
 CREATE TABLE smaller_books (
     id SERIAL PRIMARY KEY,
     isbn VARCHAR NOT NULL,
@@ -24,3 +24,5 @@ CREATE TABLE smaller_books (
     author VARCHAR NOT NULL,
     year INTEGER NOT NULL
 );
+
+-- Table for reviews

@@ -1,0 +1,21 @@
+<!--
+    Passed variable: src, books
+-->
+{% extends "layout.html" %}
+
+{% block body %}
+    <div class="container center">
+        <h2>Search input '{{src}}' resulted the following</h2>    
+
+        <p>Result format: isbn, title, author</p>
+        <ul>
+            {% for book in books %}
+                <li>
+                    <a href="flag.html">
+                        {{book.isbn}}, {{book.title}}, {{book.author}}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

@@ -1,4 +1,8 @@
-# VERSION 1
+'''VERSION 1.2                                           
+    Wanted extra functionality
+    1. username signup should be case insensitive
+'''
+
 
 import os
 
@@ -22,28 +26,64 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
+# TODO: understand sessions and note taking
 reviewed = []
 
+# Global variable for session
+user_id = 0
+
 # TODO: can just direct to login page
-@app.route("/")
+# @app.route("/")
+# def index():
+#     return render_template("index.html")
+
+@app.route("/", methods=["POST", "GET"])
 def index():
+    global user_id
+    
+    if request.method == 'POST':
+        # TODO: implement full login/logout feature
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        if db.execute("SELECT * FROM user_book WHERE user_name = :username AND user_password = :password", {"username": username.lower(), "password": password}).rowcount!=0:
+            # Fetch the user_id
+            current_user = db.execute("SELECT * FROM user_book WHERE user_name = :username AND user_password = :password", {"username": username.lower(), "password": password}).fetchone()
+            # Sets the user session list
+            user_id = current_user.id
+            session[user_id] = []
+            
+            # Renders to search-book page
+            return render_template("search-book.html", reviewed=session[user_id])
+
+        #incorrect username/password TODO: implement create user
+        return render_template("error.html") 
+        
+    # Default GET method renders index.html template, make sure session is cleared in case a user uses back command and clear the reviewed lsit.
+    session.pop(user_id, None)
+    user_id = 0
     return render_template("index.html")
 
-@app.route("/login", methods=["POST"])
-def login():
-    '''
-        IF user and pass exists = go to search
-        ELSE = error page
-    '''
-    # TODO: implement full login/logout feature
-    username = request.form.get("username")
-    password = request.form.get("password")
-    
-    if db.execute("SELECT * FROM user_book WHERE user_name = :username AND user_password = :password", {"username": username, "password": password}).rowcount!=0:
+# Signup method
+@app.route("/signup", methods=["POST", "GET"])
+def signup():
 
-        return render_template("search-book.html")
+    if request.method == 'POST':
+        username = request.form.get("username")
+        password = request.form.get("password")
 
-    return render_template("error.html")
+        if db.execute("SELECT * FROM user_book WHERE user_name = :username", {"username": username.lower()}).rowcount != 0:
+            # Username already taken
+            return render_template("username-taken.html")
+            
+        # Add User to Database and send to success page
+        db.execute("INSERT INTO user_book (user_name, user_password) VALUES (:username, :password)", {"username":username.lower(), "password":password})
+        db.commit()
+        return render_template("success.html")
+
+    # Default GET method goes to signup page
+    return render_template("signup.html")
+
 
 @app.route("/search-book")
 def search_book():

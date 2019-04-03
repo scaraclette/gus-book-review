@@ -1,5 +1,6 @@
 '''VERSION 1.2                                           
     Wanted extra functionality
+    1. Make sure that people can't access URL for searching book via id or allow them but notify that they are not logged in
 '''
 
 
@@ -39,7 +40,7 @@ user_id = 0
 @app.route("/", methods=["POST", "GET"])
 def index():
     global user_id
-    
+
     if request.method == 'POST':
         # TODO: implement full login/logout feature
         username = request.form.get("username")
@@ -98,7 +99,7 @@ def book(book_id):
     # Invalid book id
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id":book_id}).fetchone()
     if book is None:
-        return render_template("invalid-id.html") #TODO create invalid-id.html
+        return render_template("invalid-id.html")
 
     # Pass book object to page for its details
     return render_template("details.html", book=book)

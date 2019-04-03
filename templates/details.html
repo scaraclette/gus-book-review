@@ -1,0 +1,26 @@
+<!--
+    Passed variable: book
+
+    TODO:
+    Details should include the following
+    1. title
+    2. author
+    3. publication year
+    4. ISBN
+    5. REVIEWS....
+-->
+{% extends "layout.html" %}
+
+{% block heading %}{{ book.title }}{% endblock %}
+
+{% block body %}
+    <div class="container center">
+        <p><strong>Author</strong>: {{ book.author }} <br>
+        <strong>ISBN</strong>: {{ book.isbn }} <br>
+        <strong>Year Published</strong>: {{ book.year }}</p>
+    </div>
+
+    <!--TODO: -->
+
+
+{% endblock %}

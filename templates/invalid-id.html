@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <div class="container center">
+        <p class="center">No book with that link!</p>
+    </div>
+
+    <div class="container center">
+            <a href="{{ url_for('search_book') }}">
+                <button type="button" class="btn btn-primary btn-block">back</button> 
+            </a>
+    </div>
+{% endblock %}

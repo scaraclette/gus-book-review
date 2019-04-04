@@ -4,7 +4,7 @@
 '''
 
 
-import os
+import os, sys
 
 from flask import Flask, session, render_template, request
 from flask_session import Session
@@ -25,9 +25,6 @@ Session(app)
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
-
-# TODO: understand sessions and note taking
-reviewed = []
 
 # Global variable for session
 user_id = 0
@@ -93,13 +90,41 @@ def search_book():
 
     return render_template("result.html", books=books, src=src)
 
-@app.route("/search-book/<int:book_id>")
+@app.route("/search-book/<int:book_id>", methods=["GET", "POST"])
 def book(book_id):
+    global user_id
+    this_id = book_id
 
+    if request.method == 'POST':
+        rating = float(request.form.get("rating"))
+        review = request.form.get("review")
+
+        # If the user is not logged in, redirect to first page
+        if user_id == 0:
+            return render_template("login.html", book_id=book_id)
+
+        if db.execute("SELECT * FROM user_reviews WHERE user_id = :user AND book_id = :book_id", {"user":user_id, "book_id":book_id}).rowcount != 0:
+            return render_template("reviewed.html", book_id=book_id) #TODO: redirect to this page for get method
+
+        db.execute("INSERT INTO user_reviews (user_id, book_id, rating, review) VALUES (:user_id, :book_id, :rating, :review)", {"user_id":user_id, "book_id":book_id, "rating":rating, "review":review})
+        db.commit()
+        return render_template("message.html", book_id=book_id,msg="review submitted!", btn="back")
+        
+        
     # Invalid book id
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id":book_id}).fetchone()
     if book is None:
         return render_template("invalid-id.html")
 
-    # Pass book object to page for its details
-    return render_template("details.html", book=book)
+    # Fetch all the reviews and display to details TODO
+    reviews = db.execute("SELECT * FROM user_reviews JOIN user_book ON user_reviews.user_id=user_book.id AND user_reviews.book_id = :book_id", {"book_id":book_id}).fetchall()
+    
+
+    return render_template("details.html", reviews=reviews, book=book)
+
+# id    user_id     book_id     rating      review
+
+# # TODO implement review method
+# @app.route("/review", methods=["POST"])
+# def review():
+#     return render_template("test.html")

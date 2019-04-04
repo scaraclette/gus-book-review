@@ -26,3 +26,22 @@ CREATE TABLE smaller_books (
 );
 
 -- Table for reviews
+CREATE TABLE user_reviews (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES user_book,
+    book_id INTEGER REFERENCES books,
+    rating REAL NOT NULL,
+    review VARCHAR NOT NULL
+);
+
+/*
+    id      user_id             book_id         rating      review
+    1       *book_user id*      *books id*      ...         ...
+
+*/
+
+--Join query example
+SELECT * FROM user_reviews JOIN user_book on user_reviews.user_id=user_book.id;
+
+-- Want: user_reviews joined with user_book for specific book
+SELECT * FROM user_reviews JOIN user_book ON user_reviews.user_id=user_book.id AND user_reviews.book_id = 1;

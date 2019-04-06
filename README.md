@@ -11,7 +11,7 @@ Welcome to <strong>Gus' Book Reviews</strong>! This project is a website that st
 </ul>
 
 
-<h2>Services Use</h2>
+<h2>Services Used</h2>
 <ul>
     <li><a href="https://www.goodreads.com/">Goodreads</a>: used the website's API to get information for average reviews and review counts.</li>
     <li><a href="https://www.heroku.com/">Heroku</a>: used an external PostgreSQL database instead of local</li>

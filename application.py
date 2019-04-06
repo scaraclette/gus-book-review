@@ -1,9 +1,6 @@
-'''VERSION 1.2                                           
-    Wanted extra functionality
-    1. Make sure that people can't access URL for searching book via id or allow them but notify that they are not logged in
 '''
-
-
+    cs50x Project 1: Book Review    
+'''
 import os, sys, requests
 
 from flask import Flask, session, render_template, request, jsonify
@@ -29,17 +26,12 @@ db = scoped_session(sessionmaker(bind=engine))
 # Global variable for session
 user_id = 0
 
-# TODO: can just direct to login page
-# @app.route("/")
-# def index():
-#     return render_template("index.html")
-
 @app.route("/", methods=["POST", "GET"])
 def index():
     global user_id
 
     if request.method == 'POST':
-        # TODO: implement full login/logout feature
+        # Implement full login/logout feature
         username = request.form.get("username")
         password = request.form.get("password")
         
@@ -53,12 +45,12 @@ def index():
             # Renders to search-book page
             return render_template("search-book.html", reviewed=session[user_id])
 
-        #incorrect username/password TODO: implement create user
+        # Incorrect username/password
         return render_template("error.html") 
         
-    # Default GET method renders index.html template, make sure session is cleared in case a user uses back command and clear the reviewed lsit.
-    # session.pop(user_id, None)
-    # user_id = 0
+    # Default GET method renders index.html template, make sure session is cleared in case a user uses back command and clear the reviewed list. Also logs out user
+    session.pop(user_id, None)
+    user_id = 0
     return render_template("index.html")
 
 # Signup method
@@ -85,10 +77,7 @@ def signup():
 @app.route("/search-book")
 def search_book():
     src = request.values.get("search")
-
     books = db.execute("SELECT * FROM books WHERE title ILIKE '%" + src +"%' OR isbn ILIKE '%" + src + "%' or author ILIKE '%" + src + "%'").fetchall()
-    
-
     return render_template("result.html", books=books, src=src)
 
 @app.route("/search-book/<int:book_id>", methods=["GET", "POST"])
@@ -104,7 +93,7 @@ def book(book_id):
             return render_template("login.html", book_id=book_id)
 
         if db.execute("SELECT * FROM user_reviews WHERE user_id = :user AND book_id = :book_id", {"user":user_id, "book_id":book_id}).rowcount != 0:
-            return render_template("reviewed.html", book_id=book_id) #TODO: redirect to this page for get method
+            return render_template("reviewed.html", book_id=book_id)
 
         db.execute("INSERT INTO user_reviews (user_id, book_id, rating, review) VALUES (:user_id, :book_id, :rating, :review)", {"user_id":user_id, "book_id":book_id, "rating":rating, "review":review})
         db.commit()

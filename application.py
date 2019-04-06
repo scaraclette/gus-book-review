@@ -4,9 +4,9 @@
 '''
 
 
-import os, sys
+import os, sys, requests
 
-from flask import Flask, session, render_template, request
+from flask import Flask, session, render_template, request, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -57,8 +57,8 @@ def index():
         return render_template("error.html") 
         
     # Default GET method renders index.html template, make sure session is cleared in case a user uses back command and clear the reviewed lsit.
-    session.pop(user_id, None)
-    user_id = 0
+    # session.pop(user_id, None)
+    # user_id = 0
     return render_template("index.html")
 
 # Signup method
@@ -87,13 +87,13 @@ def search_book():
     src = request.values.get("search")
 
     books = db.execute("SELECT * FROM books WHERE title ILIKE '%" + src +"%' OR isbn ILIKE '%" + src + "%' or author ILIKE '%" + src + "%'").fetchall()
+    
 
     return render_template("result.html", books=books, src=src)
 
 @app.route("/search-book/<int:book_id>", methods=["GET", "POST"])
 def book(book_id):
     global user_id
-    this_id = book_id
 
     if request.method == 'POST':
         rating = float(request.form.get("rating"))
@@ -116,15 +116,71 @@ def book(book_id):
     if book is None:
         return render_template("invalid-id.html")
 
-    # Fetch all the reviews and display to details TODO
+    # TODO Fetch the average ratings from Goodreads
+    avg_rating = average_ratings(book)
+
+    # Fetch all the reviews and display to details
     reviews = db.execute("SELECT * FROM user_reviews JOIN user_book ON user_reviews.user_id=user_book.id AND user_reviews.book_id = :book_id", {"book_id":book_id}).fetchall()
     
 
-    return render_template("details.html", reviews=reviews, book=book)
+    return render_template("details.html", reviews=reviews, book=book, avg_rating=avg_rating)
 
-# id    user_id     book_id     rating      review
+@app.route("/logout")
+def logout():
+    global user_id
 
-# # TODO implement review method
-# @app.route("/review", methods=["POST"])
-# def review():
-#     return render_template("test.html")
+    session.pop(user_id, None)
+    return render_template('index.html')
+    
+
+
+# This method returns the average rating using API from Goodreads
+def average_ratings(book):
+    # Extract isbn value from column
+    isbn = book.isbn
+
+    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "em1r7LNXooncXW3WfK06Q", "isbns":isbn})
+    data = res.json()
+    # Retrieve average_rating as string
+    avg_rating = data['books'][0]['average_rating']
+
+    # Check if avg_rating is None
+    if len(avg_rating) == 0:
+        return "no average rating available"
+    
+    # Return average rating as string
+    return avg_rating 
+
+# TODO make average_ratings and review_count into one method that returns a list or dictionary
+def review_count(isbn):
+    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "em1r7LNXooncXW3WfK06Q", "isbns":isbn})
+    data = res.json()
+
+    # Retrieve review count
+    review_count = data['books'][0]['reviews_count']
+
+    if review_count == 0:
+        return "no review count available"
+
+    return review_count
+
+@app.route("/api/<string:isbn>")
+def api_isbn(isbn):
+
+    # Check if book exists
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn":isbn}).fetchone()
+    if book is None:
+        return jsonify({"error": "book not in database"}), 404
+
+    # Get review_count and avg_rating
+    avg = average_ratings(book)
+    count = review_count(isbn)
+
+    return jsonify({
+        "title": book.title,
+        "author": book.author,
+        "year": book.year,
+        "isbn": book.isbn,
+        "review_count": count,
+        "average_score": avg
+    })

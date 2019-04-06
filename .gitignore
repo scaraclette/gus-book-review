@@ -1,3 +1,4 @@
 # Ignore flask_session and cache
 flask_session
 __pycache__
+test.py

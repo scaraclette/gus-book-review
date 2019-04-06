@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <div class="container center">
+        <p class="center">Username taken!</p>
+    </div>
+
+    <div class="container center">
+            <a href="{{ url_for('index') }}" method="GET">
+                <button type="button" class="btn btn-primary btn-block">back</button> 
+            </a>
+    </div>
+{% endblock %}

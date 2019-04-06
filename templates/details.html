@@ -1,0 +1,87 @@
+<!--
+    Passed variable: book, reviews
+
+    TODO:
+    Details should include the following
+    1. title
+    2. author
+    3. publication year
+    4. ISBN
+    5. REVIEWS....
+-->
+{% extends "layout.html" %}
+
+{% block navbar %}
+    <!--Navbar for all pages-->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Navbar</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+              <a class="nav-link disabled" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Search</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Reviews</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('index') }}">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>    
+{% endblock %}
+
+{% block heading %}{{ book.title }}{% endblock %}
+
+{% block body %}
+    <div class="container center">
+        <p>
+        <strong>Author</strong>: {{ book.author }} <br>
+        <strong>ISBN</strong>: {{ book.isbn }} <br>
+        <strong>Year Published</strong>: {{ book.year }} <br>
+        <strong>Average Rating</strong>: {{ avg_rating }}
+        </p>
+    </div>
+
+    <!--TODO: Implement rating
+        1. We have specific user id from global user_id
+        2. We have specified book id from database
+        3. THEY CANNOT BE THE SAME
+    -->
+    <div class="container center">
+        <form action="{{ url_for('book', book_id=book.id) }}" method="POST"> 
+            
+            <div class="container">
+                Enter rating between 1 and 5
+                <input type="number" step="0.5" name="rating" min="1" max="5">
+            </div>
+            
+            <div class="form-group">
+                <textarea class="form-control" rows="5" name="review"></textarea>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary">Submit</button>
+            </div>
+
+        </form>
+    </div>
+
+    <!--For review-->
+    <div class="container center">
+        <!--If reviews is not null print out the reviews-->
+        <ol>
+            <!--Potentially use if statements-->
+            {% for review in reviews %}
+                <li><b>{{ review.user_name }}</b> rated: {{ review.rating }}<br> {{ review.review }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+
+{% endblock %}
